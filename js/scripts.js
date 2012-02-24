@@ -8,7 +8,8 @@ var cellSize;
 var board;
 var noOfCellsHorizontal;
 var noOfCellsVertical;
-var tickLength = 2;
+var tickLength = 0.5;
+var ticker;
 
 function init(){
 	canvas = document.querySelector('canvas');
@@ -22,6 +23,17 @@ function init(){
 	
 	//initialize the empty board
 	board = new Array(noOfCellsHorizontal);
+	resetBoard();
+
+	ctx = canvas.getContext('2d');
+
+	canvas.addEventListener('mouseup', registerInput, false);
+	start();
+	pause();
+}
+
+function resetBoard()
+{
 	for(var i=0; i<=noOfCellsHorizontal-1; i++)
 	{
 		board[i] = new Array(noOfCellsVertical);
@@ -31,13 +43,18 @@ function init(){
 			board[i][j] = 0;
 		}
 	}
-	console.log(board);
+}
 
-	ctx = canvas.getContext('2d');
-
-	canvas.addEventListener('mouseup', registerInput, false);
+function start()
+{
+	document.getElementById('status').innerHTML = "Running";
 	drawBoard();
-	window.setInterval('gameTick()', tickLength*1000);
+	ticker = window.setInterval('gameTick()', tickLength*1000);
+}
+
+function pause(){
+	document.getElementById('status').innerHTML = "Paused";
+	window.clearInterval(ticker);
 }
 
 function drawGrid()
@@ -107,30 +124,39 @@ function drawBoard()
 
 function gameTick()
 {
+	var calc = [];
 	for(var i=0; i<=noOfCellsHorizontal-1; i++)
 	{
 		for(var j=0; j<=noOfCellsVertical-1; j++)
 		{
 			numberOfNeighbours = getNumberOfNeighbours(i,j);
 			if(board[i][j] == 1){
-				if(numberOfNeighbours==0)
+				if(numberOfNeighbours<2)
 				{
-					console.log("no neighbours, dying...")
-					board[i][j] = 0;
+//					console.log("(" + i + ", " + j + ") doesn't have enough neighbours, dying...")
+					calc.push([i, j, 0]);
+//					newBoard[i][j] = 0;
+
 				}
 				else if(numberOfNeighbours>=4){
-					console.log("overpopulation, dying...")
-					board[i][j] = 0;
+//					console.log("(" + i + ", " + j + ") is suffering from overpopulation, dying...")
+					calc.push([i, j, 0]);
+//					newBoard[i][j] = 0;
 				}
 			}
 			else
 			{
-				if(numberOfNeighbours == 2 ||numberOfNeighbours == 3)
+				if(numberOfNeighbours == 3)
 				{
-					board[i][j] = 1;
+					calc.push([i, j, 1]);
+//					newBoard[i][j] = 1;
 				}
 			}
 		}
+	}
+
+	for(var i=0; i<calc.length; i++){
+		board[calc[i][0]][calc[i][1]] = calc[i][2];
 	}
 	drawBoard();
 }
@@ -142,15 +168,21 @@ function getNumberOfNeighbours(x,y)
 	{
 		for(var j=-1; j<=1; j++)
 		{
-			if((i!=0 && j!=0) && (x+i>=0 && y+j>=0) && (x+i<=noOfCellsHorizontal-1 && y+j<=noOfCellsVertical-1))
+			if((x+i>=0 && y+j>=0) && (x+i<=noOfCellsHorizontal-1 && y+j<=noOfCellsVertical-1))
 			{
 				if(board[x+i][y+j] == 1)
 				{
-					console.log("found neighbour at (" + x + ", " + y + ")")
+					var xi = x+i;
+					var yj = y+j;
+//					console.log("(" + x + ", " + y + ") has a neighbour at (" + xi + ", " + yj + ")");
 					result += 1;
 				}
 			}
 		}
 	}
+	if(board[x][y]==1){
+		result--;
+	}
+//	console.log("(" + x + ", " + y + ") has a total of " + result + " neighbours");
 	return result;
 }
