@@ -9,17 +9,21 @@ var board;
 var noOfCellsHorizontal;
 var noOfCellsVertical;
 var tickLength = 0.5;
+var targetFramerate = 60;
 var ticker;
+var running;
+var mousePosition;
+var view;
 
 function init(){
 	canvas = document.querySelector('canvas');
 	canvasWidth = canvas.width;
 	canvasHeight = canvas.height;
 
-	// TODO
 	cellSize = 16;
 	noOfCellsHorizontal = Math.floor(canvasWidth/cellSize);
 	noOfCellsVertical = Math.floor(canvasHeight/cellSize);
+	mousePosition = [];
 	
 	//initialize the empty board
 	board = new Array(noOfCellsHorizontal);
@@ -28,6 +32,9 @@ function init(){
 	ctx = canvas.getContext('2d');
 
 	canvas.addEventListener('mouseup', registerInput, false);
+	canvas.addEventListener('mousemove', mouseOverInput, false);
+
+	view = window.setInterval('drawBoard()', Math.round(60/targetFramerate));
 	start();
 	pause();
 }
@@ -47,14 +54,22 @@ function resetBoard()
 
 function start()
 {
-	document.getElementById('status').innerHTML = "Running";
-	drawBoard();
-	ticker = window.setInterval('gameTick()', tickLength*1000);
+	if(!running)
+	{
+		running = true;
+		document.getElementById('status').innerHTML = "Running";
+		drawBoard();
+		ticker = window.setInterval('gameTick()', tickLength*1000);
+	}
 }
 
 function pause(){
-	document.getElementById('status').innerHTML = "Paused";
-	window.clearInterval(ticker);
+	if(running)
+	{
+		running = false;
+		document.getElementById('status').innerHTML = "Paused";
+		window.clearInterval(ticker);
+	}
 }
 
 function drawGrid()
@@ -77,6 +92,17 @@ function drawGrid()
 	}
 }
 
+function mouseOverInput(ev)
+{
+	var x, y;
+	if(ev.offsetX || ev.offsetY == 0)
+	{
+		x = ev.offsetX;
+		y = ev.offsetY;
+	}
+	mousePosition = [Math.floor(x/cellSize), Math.floor(y/cellSize)];
+}
+
 function registerInput(ev)
 {
 	var x, y;
@@ -85,7 +111,6 @@ function registerInput(ev)
    		x = ev.offsetX;
     	y = ev.offsetY;
   	}
-  	console.log("x: " + x + ", y: " + y);
 
   	doSomething(Math.floor(x/16), Math.floor(y/16));
 }
@@ -94,8 +119,6 @@ function doSomething(x, y)
 {
   	console.log("x: " + x + ", y: " + y);
 	board[x][y] = 1;
-	console.log(board[x][y]);
-	drawBoard();
 }
 
 function drawBoard()
@@ -108,18 +131,20 @@ function drawBoard()
 	drawGrid();
 
 	// Draws the board
-	console.log("drawing board");
 	ctx.fillStyle = 'rgb(0,0,0)';
 	for(var i=0; i<=noOfCellsHorizontal-1; i++)
 	{
-
-	for(var j=0; j<=noOfCellsVertical-1; j++)
+		for(var j=0; j<=noOfCellsVertical-1; j++)
 		{
 			if(board[i][j] == 1){
 				ctx.fillRect(i*cellSize,j*cellSize,cellSize,cellSize);
 			}
 		}
 	}
+
+	// paint the mouse position
+	ctx.fillStyle = 'rgb(255,0,0)';
+	ctx.fillRect(mousePosition[0]*cellSize, mousePosition[1]*cellSize, cellSize, cellSize);
 }
 
 function gameTick()
@@ -133,15 +158,11 @@ function gameTick()
 			if(board[i][j] == 1){
 				if(numberOfNeighbours<2)
 				{
-//					console.log("(" + i + ", " + j + ") doesn't have enough neighbours, dying...")
 					calc.push([i, j, 0]);
-//					newBoard[i][j] = 0;
 
 				}
 				else if(numberOfNeighbours>=4){
-//					console.log("(" + i + ", " + j + ") is suffering from overpopulation, dying...")
 					calc.push([i, j, 0]);
-//					newBoard[i][j] = 0;
 				}
 			}
 			else
@@ -149,7 +170,6 @@ function gameTick()
 				if(numberOfNeighbours == 3)
 				{
 					calc.push([i, j, 1]);
-//					newBoard[i][j] = 1;
 				}
 			}
 		}
@@ -158,7 +178,6 @@ function gameTick()
 	for(var i=0; i<calc.length; i++){
 		board[calc[i][0]][calc[i][1]] = calc[i][2];
 	}
-	drawBoard();
 }
 
 function getNumberOfNeighbours(x,y)
