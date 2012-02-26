@@ -1,5 +1,3 @@
-window.onload = init;
-
 var canvas;
 var ctx;
 var canvasWidth;
@@ -15,7 +13,10 @@ var running;
 var mousePosition;
 var view;
 
+
 function init(){
+//	initSocketIo();
+
 	canvas = document.querySelector('canvas');
 	canvasWidth = canvas.width;
 	canvasHeight = canvas.height;
@@ -32,11 +33,11 @@ function init(){
 	ctx = canvas.getContext('2d');
 
 	canvas.addEventListener('mouseup', registerInput, false);
-	canvas.addEventListener('mousemove', mouseOverInput, false);
+//	canvas.addEventListener('mousemove', mouseOverInput, false);
 
-	view = window.setInterval('drawBoard()', Math.round(60/targetFramerate));
-	start();
-	pause();
+//	view = window.setInterval('drawBoard()', Math.round(60/targetFramerate));
+//	start();
+//	pause();
 }
 
 function resetBoard()
@@ -54,22 +55,31 @@ function resetBoard()
 
 function start()
 {
-	if(!running)
-	{
-		running = true;
-		document.getElementById('status').innerHTML = "Running";
-		drawBoard();
-		ticker = window.setInterval('gameTick()', tickLength*1000);
-	}
+	socket.emit('start', {action: "start"});
+	
+	// if(!running)
+	// {
+	// 	running = true;
+	// 	document.getElementById('status').innerHTML = "Running";
+	// 	drawBoard();
+	// 	ticker = window.setInterval('gameTick()', tickLength*1000);
+	// }
 }
 
 function pause(){
-	if(running)
-	{
-		running = false;
-		document.getElementById('status').innerHTML = "Paused";
-		window.clearInterval(ticker);
-	}
+	socket.emit('stop', {action: "stop"});
+	// socket.on('status', function (data){
+	// 	console.log(data.running);
+	// 	running = data.running;
+	// 	document.getElementById('status').innerHTML = data.running;
+	// });
+
+	// if(running)
+	// {
+	// 	running = false;
+	// 	document.getElementById('status').innerHTML = "Paused";
+	// 	window.clearInterval(ticker);
+	// }
 }
 
 function drawGrid()
@@ -106,16 +116,18 @@ function mouseOverInput(ev)
 function registerInput(ev)
 {
 	var x, y;
-  	if (ev.offsetX || ev.offsetX == 0)
-  	{
-   		x = ev.offsetX;
-    	y = ev.offsetY;
+   	if (ev.offsetX || ev.offsetX == 0)
+   	{
+    	x = ev.offsetX;
+     	y = ev.offsetY;
   	}
 
-  	doSomething(Math.floor(x/16), Math.floor(y/16));
+ 	socket.emit('click', { x: Math.floor(x/cellSize), y: Math.floor(y/cellSize) });
+
+ //  	doSomething(Math.floor(x/16), Math.floor(y/16));
 }
 
-function doSomething(x, y)
+function toggleCell(x, y)
 {
   	console.log("x: " + x + ", y: " + y);
 	board[x][y] = 1;
@@ -204,4 +216,9 @@ function getNumberOfNeighbours(x,y)
 	}
 //	console.log("(" + x + ", " + y + ") has a total of " + result + " neighbours");
 	return result;
+}
+
+function helloworld()
+{
+	console.log("hello world!");
 }
