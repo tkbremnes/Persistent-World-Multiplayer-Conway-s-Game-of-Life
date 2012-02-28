@@ -32,20 +32,18 @@
     
 
     <div id="gol_wrapper">
-    <p id="status">STATUS</p>
-  
-      <canvas width="400" height="304" id="canvas"></canvas>
-      
-      <div id="button_wrapper">
-        <button onclick="start()">Start</button>
-        <button onclick="pause()">Stop</button>
-        <button onclick="resetBoard()">Reset</button>
+        <canvas width="400" height="304" id="canvas"></canvas>
       </div>
+      <div id="button_wrapper">
+        <button onclick="start()" id="startButton">Start</button>
+        <button onclick="pause()" id="pauseButton">Pause</button>
+        <button onclick="resetBoard()" id="resetButton">Reset</button>
     </div>
+    <p id="status"><span class="statusStar">✪</span> <span id="statusText">STATUS</span> <span class="statusStar">✪</span></p>
 
     <div>
 
-      <p>This experiment is built using <a href="http://nodejs.org/">node.js</a> and <a href="http://socket.io">socket.io</a>.</p>
+      <p>This experiment is built using <a href="http://nodejs.org/">node.js</a> and <a href="http://socket.io">socket.io</a>. Thanks to <a href="http://html5boilerplate.com/">HTML5 Boilerplate</a>.</p>
 
       <h2>The rules</h2>
       <p><em>Game of Life</em> is a "cellular automaton" that plays itself according to four simple rules:
@@ -70,16 +68,21 @@
 
 
 
-  <script src="http://gol.kartoffelmos.net/scripts.js"></script>
+  <script src="js/script.js"></script>
   <script src="/socket.io/socket.io.js"></script>
 
   <script>
-      var socket = io.connect('http://129.241.127.32');
+      var socket = io.connect('http://129.241.127.32:1337');
 
-      socket.on('init', function(data){
+      socket.on('init', function(data)
+      {
+        console.log("init message received, starting...");
         board = data.board;
         running = data.running;
-
+        noOfCellsHorizontal = data.noOfCellsHorizontal;
+        noOfCellsVertical = data.noOfCellsVertical;
+        cellSize = data.cellSize;
+        init();
       });
 
       socket.on('receive_click', function (data)
@@ -89,12 +92,15 @@
         drawBoard();
       });
 
-      socket.on('status', function (data){
-      console.log(data.running);
-      running = data.running;
-      document.getElementById('status').innerHTML = data.running;
-  });
-      socket.on('tick', function(){
+      socket.on('status', function (data)
+      {
+        console.log(data.running);
+        running = data.running;
+        updateStatus();
+      });
+
+      socket.on('tick', function()
+      {
         console.log("tick received!");
         gameTick();
         drawBoard();
@@ -105,12 +111,13 @@
         console.log("hello world!");
       });
 
-      socket.on('sync', function(data){
+      socket.on('sync', function(data)
+      {
         board = data.board;
       });
 
       socket.on('connections', function(data){
-        document.getElementById('noOfConnections').innerHTML = data.connections;
+//        do something
       });
   </script>
 
@@ -126,6 +133,14 @@
     (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
     g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
     s.parentNode.insertBefore(g,s)}(document,'script'));
+  </script>
+
+  <script>
+    $(document).ready(function(){
+        stopLoadingAnimation();
+        console.log("sending ready signal");
+        socket.emit('client_ready', {client: 'ready'});
+      });
   </script>
 </body>
 </html>

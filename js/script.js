@@ -10,34 +10,44 @@ var tickLength = 0.5;
 var targetFramerate = 60;
 var ticker;
 var running;
-var mousePosition;
 var view;
+var status;
 
 
 function init(){
-//	initSocketIo();
-
 	canvas = document.querySelector('canvas');
 	canvasWidth = canvas.width;
 	canvasHeight = canvas.height;
 
-	cellSize = 16;
-	noOfCellsHorizontal = Math.floor(canvasWidth/cellSize);
-	noOfCellsVertical = Math.floor(canvasHeight/cellSize);
-	mousePosition = [];
-	
-	//initialize the empty board
-	board = new Array(noOfCellsHorizontal);
-	resetBoard();
-
 	ctx = canvas.getContext('2d');
 
 	canvas.addEventListener('mouseup', registerInput, false);
-//	canvas.addEventListener('mousemove', mouseOverInput, false);
+	updateStatus();
 
-//	view = window.setInterval('drawBoard()', Math.round(60/targetFramerate));
-//	start();
-//	pause();
+	// Reset button coming?
+	$('#resetButton').attr('disabled', 'disabled');
+}
+
+function updateStatus()
+{
+	console.log(running);
+	if(running)
+	{
+		window.document.getElementById('statusText').innerHTML = "The simulation is running";
+		
+		$('#pauseButton').removeAttr('disabled');
+		$('#startButton').attr('disabled', 'disabled');
+
+		$('#status .statusStar').css('color', 'green').addClass('rotating');
+	}
+	else
+	{
+		window.document.getElementById('statusText').innerHTML = "The simulation is paused";
+		$('#startButton').removeAttr('disabled');
+		$('#pauseButton').attr('disabled', 'disabled');
+
+		$('#status .statusStar').css('color', 'red').removeClass('rotating');
+	}
 }
 
 function resetBoard()
@@ -56,30 +66,10 @@ function resetBoard()
 function start()
 {
 	socket.emit('start', {action: "start"});
-	
-	// if(!running)
-	// {
-	// 	running = true;
-	// 	document.getElementById('status').innerHTML = "Running";
-	// 	drawBoard();
-	// 	ticker = window.setInterval('gameTick()', tickLength*1000);
-	// }
 }
 
 function pause(){
 	socket.emit('stop', {action: "stop"});
-	// socket.on('status', function (data){
-	// 	console.log(data.running);
-	// 	running = data.running;
-	// 	document.getElementById('status').innerHTML = data.running;
-	// });
-
-	// if(running)
-	// {
-	// 	running = false;
-	// 	document.getElementById('status').innerHTML = "Paused";
-	// 	window.clearInterval(ticker);
-	// }
 }
 
 function drawGrid()
@@ -123,8 +113,6 @@ function registerInput(ev)
   	}
 
  	socket.emit('click', { x: Math.floor(x/cellSize), y: Math.floor(y/cellSize) });
-
- //  	doSomething(Math.floor(x/16), Math.floor(y/16));
 }
 
 function toggleCell(x, y)
@@ -153,10 +141,6 @@ function drawBoard()
 			}
 		}
 	}
-
-	// paint the mouse position
-	ctx.fillStyle = 'rgb(255,0,0)';
-	ctx.fillRect(mousePosition[0]*cellSize, mousePosition[1]*cellSize, cellSize, cellSize);
 }
 
 function gameTick()
@@ -216,6 +200,11 @@ function getNumberOfNeighbours(x,y)
 	}
 //	console.log("(" + x + ", " + y + ") has a total of " + result + " neighbours");
 	return result;
+}
+
+function stopLoadingAnimation()
+{
+	//TODO
 }
 
 function helloworld()

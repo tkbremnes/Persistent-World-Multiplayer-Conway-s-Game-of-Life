@@ -1,22 +1,44 @@
-var app = require('http').createServer(handler)
-  , io = require('socket.io').listen(app)
-  , fs = require('fs')
+var sys = require("sys"),  
+    http = require("http").createServer(handler),  
+    url = require("url"),  
+    path = require("path"),  
+    fs = require("fs"),
+    io = require('socket.io').listen(http);  
 
-app.listen(8000, "129.241.127.32");
-initGame();
+http.listen(1337, "129.241.127.32");
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-
-    res.writeHead(200);
-    res.end(data);
-  });
+function handler (request, response) {
+  var uri = url.parse(request.url).pathname;
+  if(uri=='/'){
+    uri = '/index.html'
+  }
+  var filename = path.join(process.cwd(), uri);
+  console.log("requesting " + uri);
+  path.exists(filename, function(exists) {  
+        if(!exists) {  
+            response.sendHeader(404, {"Content-Type": "text/plain"});  
+            response.write("404 Not Found\n");  
+            response.close();  
+            return;  
+        }  
+  
+        fs.readFile(filename, "binary", function(err, file) {  
+            if(err) {  
+                response.sendHeader(500, {"Content-Type": "text/plain"});  
+                response.write(err + "\n");  
+                response.close();  
+                return;  
+            }  
+  
+            response.writeHead(200);  
+            response.end(file, "binary");  
+            // response.close();  
+        });  
+    });
 }
+
+
+initGame();
 
 var sct;
 var numberOfConnections = 0;
@@ -26,11 +48,14 @@ io.sockets.on('connection', function (socket)
   numberOfConnections++;
   sct = socket;
 //  socket.emit('news', { hello: 'world' });
-  socket.emit('init', {running: running, board: board});
-
   socket.emit('connections', {connections: numberOfConnections});
   socket.broadcast.emit('connections', {connections: numberOfConnections});
   
+  socket.on('client_ready', function(data){
+    console.log("ready signal received, sending init");
+    socket.emit('init', {running: running, board: board, noOfCellsHorizontal: noOfCellsHorizontal, noOfCellsVertical: noOfCellsVertical, cellSize: cellSize});
+  });
+
   socket.on('start', function (data)
   {
     console.log("starting simulation");
