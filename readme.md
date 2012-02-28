@@ -1,3 +1,5 @@
 # Game of Life
 
-[For the time running here](http://129.241.127.32:1337/).
+[Demo running here.](http://gameoflife.kartoffelmos.net/).
+
+Built with [node.js](http://nodejs.org/) and [Socket.IO](http://socket.io/).
