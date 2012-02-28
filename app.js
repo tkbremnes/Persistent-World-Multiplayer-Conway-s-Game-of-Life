@@ -131,7 +131,7 @@ function pause(){
 
 function toggleCell(x, y)
 {
-  if(x!=null && y!=null && x!='null' && y!='null' && (x<noOfCellsVertical && y<noOfCellsHorizontal) && (x>=0 && y<=0){
+  if(x!=null && y!=null && x!='null' && y!='null' && (y<noOfCellsVertical && x<noOfCellsHorizontal) && (x>=0 && y>=0)){
     board[x][y] = 1;
     sct.emit('receive_click', {x: x, y: y});
   }

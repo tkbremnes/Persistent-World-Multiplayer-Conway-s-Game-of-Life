@@ -1,78 +1,131 @@
 <!doctype html>
-
-<html>
-
+<!--[if lt IE 7]> <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang="en"> <![endif]-->
+<!--[if IE 7]>    <html class="no-js lt-ie9 lt-ie8" lang="en"> <![endif]-->
+<!--[if IE 8]>    <html class="no-js lt-ie9" lang="en"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
 <head>
-	<title>Game of Life</title>
+  <meta charset="utf-8">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <title>Game of Life</title>
+  <meta name="description" content="">
+
+  <meta name="viewport" content="width=device-width">
+
+  <!-- Place favicon.ico and apple-touch-icon.png in the root directory: mathiasbynens.be/notes/touch-icons -->
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href='http://fonts.googleapis.com/css?family=PT+Sans|PT+Serif' rel='stylesheet' type='text/css'>
+
+  <script src="js/libs/modernizr-2.5.0.min.js"></script>
 </head>
 <body>
-	<h1>Persistent World Multiplayer Conway's Game of Life</h1>
+  <!--[if lt IE 7]><p class=chromeframe>Your browser is <em>ancient!</em> <a href="http://browsehappy.com/">Upgrade to a different browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to experience this site.</p><![endif]-->
+<div id="page_wrapper">
+  <header>
+    <h1>Persistent World Multiplayer Conway's Game of Life</h1>
+  </header>
+  <div role="main" id="main_wrapper">
 
-	<p id="status">STATUS</p>
-	
-	<canvas width="400" height="304" id="canvas"></canvas>
-	<button onclick="start()">Start</button>
-	<button onclick="pause()">Stop</button>
-	<button onclick="resetBoard()">Reset</button>
+    <a href="http://github.com/you"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6461726b626c75655f3132313632312e706e67" alt="Fork me on GitHub"></a>
+    
 
+    <div id="gol_wrapper">
+    <p id="status">STATUS</p>
+  
+      <canvas width="400" height="304" id="canvas"></canvas>
+      
+      <div id="button_wrapper">
+        <button onclick="start()">Start</button>
+        <button onclick="pause()">Stop</button>
+        <button onclick="resetBoard()">Reset</button>
+      </div>
+    </div>
 
-	<p>Number of connections: <span id="noOfConnections">unknown</span></p>
+    <div>
 
+      <p>This experiment is built using <a href="http://nodejs.org/">node.js</a> and <a href="http://socket.io">socket.io</a>.</p>
 
-	<script src="http://gol.kartoffelmos.net/scripts.js"></script>
+      <h2>The rules</h2>
+      <p><em>Game of Life</em> is a "cellular automaton" that plays itself according to four simple rules:
+      <ol>
+        <li>Any live cell with fewer than two live neighbours dies, as if caused by under-population.
+        <li>Any live cell with two or three live neighbours lives on to the next generation.
+        <li>Any live cell with more than three live neighbours dies, as if by overcrowding.
+        <li>Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+      </ol>
 
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-	<script src="/socket.io/socket.io.js"></script>
+      <a href="http://en.wikipedia.org/wiki/Conway's_Game_of_Life">Source: Wikipedia</a>.</p>
 
-	<script>
-  		var socket = io.connect('http://129.241.127.32');
-
-  		socket.on('init', function(data){
-  			board = data.board;
-  			running = data.running;
-
-  		});
-
-  		socket.on('receive_click', function (data)
-  		{
-  			console.log("click received");
-  			toggleCell(data.x, data.y);
-  			drawBoard();
-  		});
-
-  		socket.on('status', function (data){
-			console.log(data.running);
-			running = data.running;
-			document.getElementById('status').innerHTML = data.running;
-	});
-  		socket.on('tick', function(){
-  			console.log("tick received!");
-  			gameTick();
-  			drawBoard();
-  		});
-
-  		socket.on('helloworld', function()
-  		{
-  			console.log("hello world!");
-  		});
-
-  		socket.on('sync', function(data){
-  			board = data.board;
-  		});
-
-  		socket.on('connections', function(data){
-  			document.getElementById('noOfConnections').innerHTML = data.connections;
-  		});
-	</script>
+    </div>
 
 
-	
-	
-	<script>
-		$(document).ready(function(){
-			init();
-		});
-	</script>
+</div>
+  </div>
+  <footer id="disclaimer">
+    <p>This is a thingamabob by <a href="http://twitter.com/kartoffelmos">@kartoffelmos</a>
+  </footer>
+
+
+
+
+  <script src="http://gol.kartoffelmos.net/scripts.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script>
+      var socket = io.connect('http://129.241.127.32');
+
+      socket.on('init', function(data){
+        board = data.board;
+        running = data.running;
+
+      });
+
+      socket.on('receive_click', function (data)
+      {
+        console.log("click received");
+        toggleCell(data.x, data.y);
+        drawBoard();
+      });
+
+      socket.on('status', function (data){
+      console.log(data.running);
+      running = data.running;
+      document.getElementById('status').innerHTML = data.running;
+  });
+      socket.on('tick', function(){
+        console.log("tick received!");
+        gameTick();
+        drawBoard();
+      });
+
+      socket.on('helloworld', function()
+      {
+        console.log("hello world!");
+      });
+
+      socket.on('sync', function(data){
+        board = data.board;
+      });
+
+      socket.on('connections', function(data){
+        document.getElementById('noOfConnections').innerHTML = data.connections;
+      });
+  </script>
+
+
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script>window.jQuery || document.write('<script src="js/libs/jquery-1.7.1.min.js"><\/script>')</script>
+
+  <script src="js/plugins.js"></script>
+<!--  <script src="js/script.js"></script>-->
+
+  <script>
+    var _gaq=[['_setAccount','UA-XXXXX-X'],['_trackPageview']];
+    (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+    g.src=('https:'==location.protocol?'//ssl':'//www')+'.google-analytics.com/ga.js';
+    s.parentNode.insertBefore(g,s)}(document,'script'));
+  </script>
 </body>
-
 </html>

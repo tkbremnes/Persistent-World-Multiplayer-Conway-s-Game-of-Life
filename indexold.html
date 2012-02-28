@@ -1,0 +1,83 @@
+<!doctype html>
+
+<html>
+
+<head>
+	<title>Game of Life</title>
+</head>
+<body>
+	<h1>Persistent World Multiplayer Conway's Game of Life</h1>
+
+	<p id="status">STATUS</p>
+	
+	<canvas width="400" height="304" id="canvas"></canvas>
+	<button onclick="start()">Start</button>
+	<button onclick="pause()">Stop</button>
+	<button onclick="resetBoard()">Reset</button>
+
+
+	<p>Number of connections: <span id="noOfConnections">unknown</span></p>
+
+
+  <footer id="disclaimer">
+  <p>This is a thingamabob by <a href="http://twitter.com/kartoffelmos">@kartoffelmos</a>
+</footer>
+
+
+	<script src="http://gol.kartoffelmos.net/scripts.js"></script>
+
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+
+	<script>
+  		var socket = io.connect('http://129.241.127.32');
+
+  		socket.on('init', function(data){
+  			board = data.board;
+  			running = data.running;
+
+  		});
+
+  		socket.on('receive_click', function (data)
+  		{
+  			console.log("click received");
+  			toggleCell(data.x, data.y);
+  			drawBoard();
+  		});
+
+  		socket.on('status', function (data){
+			console.log(data.running);
+			running = data.running;
+			document.getElementById('status').innerHTML = data.running;
+	});
+  		socket.on('tick', function(){
+  			console.log("tick received!");
+  			gameTick();
+  			drawBoard();
+  		});
+
+  		socket.on('helloworld', function()
+  		{
+  			console.log("hello world!");
+  		});
+
+  		socket.on('sync', function(data){
+  			board = data.board;
+  		});
+
+  		socket.on('connections', function(data){
+  			document.getElementById('noOfConnections').innerHTML = data.connections;
+  		});
+	</script>
+
+
+	
+	
+	<script>
+		$(document).ready(function(){
+			init();
+		});
+	</script>
+</body>
+
+</html>
