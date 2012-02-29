@@ -16,17 +16,15 @@ function handler (request, response) {
   console.log("requesting " + uri);
   path.exists(filename, function(exists) {  
         if(!exists) {  
-            response.sendHeader(404, {"Content-Type": "text/plain"});  
-            response.write("404 Not Found\n");  
-            response.close();  
+            response.writeHead(404, {"Content-Type": "text/plain"});  
+            response.end("404 Not Found\n"); 
             return;  
         }  
   
         fs.readFile(filename, "binary", function(err, file) {  
             if(err) {  
-                response.sendHeader(500, {"Content-Type": "text/plain"});  
-                response.write(err + "\n");  
-                response.close();  
+                response.writeHead(500, {"Content-Type": "text/plain"});  
+                response.end(err + "\n");  
                 return;  
             }  
   
